@@ -7,6 +7,7 @@ import { IProductOrder } from '@modules/orders/dtos/ICreateOrderDTO';
 import ICustomersRepository from '@modules/customers/repositories/ICustomersRepository';
 import Order from '../infra/typeorm/entities/Order';
 import IOrdersRepository from '../repositories/IOrdersRepository';
+import IOrdersProductsRepository from '../repositories/IOrdersProductsRepository';
 
 interface IProduct {
   id: string;
@@ -29,6 +30,9 @@ class CreateOrderService {
 
     @inject('CustomersRepository')
     private customersRepository: ICustomersRepository,
+
+    @inject('OrdersProductsRepository')
+    private OrdersProductsRepository: IOrdersProductsRepository,
   ) {}
 
   public async execute({ customer_id, products }: IRequest): Promise<Order> {
@@ -67,6 +71,14 @@ class CreateOrderService {
     }));
 
     const order = await this.ordersRepository.create({ customer, products: modifyArrayProduct});
+
+    for(const product of productsDatabase){
+      const productReq = products.find(productReq => productReq.id === product.id);
+      if(!productReq){
+        throw new AppError('Product Not Found');
+      }
+      await this.OrdersProductsRepository.create({order, product, price: product.price, quantity: productReq.quantity});
+    }
 
     return order;
   }

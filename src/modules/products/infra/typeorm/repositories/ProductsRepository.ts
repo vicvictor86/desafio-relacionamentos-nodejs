@@ -57,10 +57,10 @@ class ProductsRepository implements IProductsRepository {
     if(!productsDatabase){
       return [];
     }
-
+    
     productsDatabase.map( async productDatabaseBase => {
       const productReq = products.find(productReq => productReq.id === productDatabaseBase.id);
-
+      
       if(!productReq){
         throw new AppError('Product not found');
       }

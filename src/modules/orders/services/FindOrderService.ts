@@ -4,6 +4,7 @@ import IProductsRepository from '@modules/products/repositories/IProductsReposit
 import ICustomersRepository from '@modules/customers/repositories/ICustomersRepository';
 import Order from '../infra/typeorm/entities/Order';
 import IOrdersRepository from '../repositories/IOrdersRepository';
+import IOrdersProductsRepository from '../repositories/IOrdersProductsRepository';
 import AppError from '@shared/errors/AppError';
 import { IProductOrder } from '../dtos/ICreateOrderDTO';
 
@@ -36,41 +37,34 @@ class FindOrderService {
     private productsRepository: IProductsRepository,
     @inject('CustomersRepository')
     private customersRepository: ICustomersRepository,
+    @inject('OrdersProductsRepository')
+    private OrdersProductsRepository: IOrdersProductsRepository,
   ) {}
 
   public async execute({ id }: IRequest): Promise<Order | undefined> {
-    return undefined;
-    // let order = await this.ordersRepository.findById(id);
+    const order = await this.ordersRepository.findById(id);
 
-    // if(!order) {
-    //   throw new AppError('Order not found');
-    // }
+    if(!order) {
+      throw new AppError('Order does not exist');
+    }
 
-    // const products = await this.productsRepository.findAllById(order.order_products);
+    const customer = await this.customersRepository.findById(order.customer_id);
+    
+    const ordersProducts = await this.OrdersProductsRepository.findByOrderId(order.id);
 
-    // const customer = await this.customersRepository.findById(order.customer_id);
+    if(!ordersProducts){
+      throw new AppError('Order does not exist');
+    }
 
-    // if(!customer){
-    //   throw new AppError('Customer not found');
-    // }
+    const responseOrder = {
+      ...order,
+      customer,
+      order_products: ordersProducts,
+    }as Order;
+    
+    console.log(responseOrder);
 
-    // if(!products){
-    //   throw new AppError('Products not found');
-    // }
-
-    // const modifyProduct = {
-    //   product_id: productDatabase.id,
-    //   quantity: productReq.quantity,
-    //   price: productDatabase.price,
-    // } as IProductOrder;
-
-    // order = {
-    //   ...order,
-    //   customer,
-    //   order_products: modifyProduct,
-    // }
-
-    // return order;
+    return responseOrder;
   }
 }
 

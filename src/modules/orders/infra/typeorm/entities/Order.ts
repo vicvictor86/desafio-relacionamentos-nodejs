@@ -24,7 +24,7 @@ class Order {
   @JoinColumn( {name: 'customer_id'} )
   customer: Customer;
 
-  @OneToMany(() => OrdersProducts, orders_products => orders_products.order)
+  @OneToMany(() => OrdersProducts, orders_products => orders_products.product)
   @JoinColumn( {name: 'product_id'})
   order_products: OrdersProducts[];
 
